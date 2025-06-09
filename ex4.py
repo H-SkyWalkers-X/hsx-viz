@@ -193,7 +193,7 @@ def create_sankey_options(student_data, selected_student):
     
     options = {
         "title": {
-            "text": f"学生-知识点-题目桑基图",
+            "text": f"学生-知识点-题目",
             "left": "left",
             
             'textStyle':{'color':"#000000",
@@ -216,7 +216,9 @@ def create_sankey_options(student_data, selected_student):
                     "curveness": 0.5
                 },
                 "label": {
-                    "position": "right"
+                    "position": "right",
+                    "textBorderWidth": 0,
+                    "fontSize": 20,
                 },
                 "nodeGap": 20,
                 "nodeWidth": 20,
@@ -266,15 +268,15 @@ def handle_click(clicked_node, student_data, selected_student):
     if node_level == 4:  # 第四层（题目）- 点击输出
         # 题目ID就是节点名称本身
         title_id = clicked_node
-        print(f"🎯 题目被点击: {title_id}")
-        st.toast(f"🎯 题目ID: {title_id}", icon="✅")
+        # print(f"🎯 题目被点击: {title_id}")
+        # st.toast(f"🎯 题目ID: {title_id}", icon="✅")
         
         # 获取题目详细信息
         title_info_data = student_data[student_data['title_ID'].astype(str) == str(title_id)]
         if not title_info_data.empty:
             title_row = title_info_data.iloc[0]
-            print(f"知识点: {title_row['knowledge']}, 子知识点: {title_row['sub_knowledge']}")
-            st.toast(f"知识点: {title_row['knowledge']}", icon="📋")
+            # print(f"知识点: {title_row['knowledge']}, 子知识点: {title_row['sub_knowledge']}")
+            # st.toast(f"知识点: {title_row['knowledge']}", icon="📋")
         
         click_record = f"{time.strftime('%H:%M:%S')} - 点击题目: {title_id}"
         st.session_state.click_history.append(click_record)
@@ -300,8 +302,8 @@ def handle_click(clicked_node, student_data, selected_student):
         
         return True
     
-    elif node_level in [1, 2]:  # 第一、二层 - 无操作，只显示信息
-        st.toast(f"ℹ️ 点击了{['', '学生', '知识点'][node_level]}: {clicked_node}", icon="ℹ️")
+    # elif node_level in [1, 2]:  # 第一、二层 - 无操作，只显示信息
+    #     st.toast(f"ℹ️ 点击了{['', '学生', '知识点'][node_level]}: {clicked_node}", icon="ℹ️")
         return False
     
     return False
@@ -373,7 +375,7 @@ def create_scatter_chart(title_stats):
     # 创建散点图
     scatter = (
         Scatter(init_opts=opts.InitOpts(
-            width="800px", 
+            width="600px", 
             height="600px",
             bg_color="#f5f5f5"  # 浅灰色背景
         ))
@@ -413,7 +415,8 @@ def create_scatter_chart(title_stats):
                 axistick_opts=opts.AxisTickOpts(is_show=True),
                 axislabel_opts=opts.LabelOpts(color="#1a1a1a", font_weight="bold"),  # 深黑色轴标签
                 name_textstyle_opts=opts.TextStyleOpts(color="#1a1a1a", font_weight="bold"),  # 轴名称颜色
-                type_="value"
+                type_="value",
+                
             ),
             tooltip_opts=opts.TooltipOpts(trigger="item"),
             legend_opts=opts.LegendOpts(is_show=False),
@@ -424,6 +427,7 @@ def create_scatter_chart(title_stats):
                 max_=12500,
                 min_=2000,
             ),
+            
         )
     )
     
@@ -431,7 +435,7 @@ def create_scatter_chart(title_stats):
 
 
 # 2. 创建极坐标图
-def create_polar_chart2(score_data, title_id):
+def create_radar_chart2(score_data, title_id):
     # 筛选该题目的所有学生得分
     title_scores = score_data[score_data['title_ID'] == title_id]
     
@@ -469,7 +473,7 @@ def create_polar_chart2(score_data, title_id):
         .add_schema(
             schema=indicators,
             shape="circle",
-            center=["50%", "60%"],  # 将Y轴位置从50%改为60%，整体向下移动
+            center=["50%", "50%"],  # 将Y轴位置从50%改为60%，整体向下移动
             radius="60%",
             angleaxis_opts=opts.AngleAxisOpts(
                 min_=0,
@@ -489,9 +493,9 @@ def create_polar_chart2(score_data, title_id):
                     is_show=True, 
                     linestyle_opts=opts.LineStyleOpts(width=1, opacity=0.5, color="#1a1a1a")
                 ),
-                axislabel_opts=opts.LabelOpts(color="#1a1a1a", font_weight="bold"),  # 深黑色标签
+                axislabel_opts=opts.LabelOpts(is_show=False),  # 深黑色标签
             ),
-            polar_opts=opts.PolarOpts(center=["50%", "60%"], radius=["0%", "60%"]),  # 添加极坐标系整体位置控制
+            polar_opts=opts.PolarOpts(center=["50%", "50%"], radius=["0%", "60%"]),  # 添加极坐标系整体位置控制
             splitarea_opt=opts.SplitAreaOpts(is_show=False),
             splitline_opt=opts.SplitLineOpts(is_show=False),
         )
@@ -625,7 +629,7 @@ def create_submission_bar_chart_time(data, metric, y_axis_name):
     
     # 创建柱形图
     bar = (
-        Bar(init_opts=opts.InitOpts(width="100px",height='100px'))
+        Bar(init_opts=opts.InitOpts(width="100px",height='200px'))
         .add_xaxis(x_data)
         .add_yaxis(y_axis_name,
                     y_data,
@@ -636,6 +640,24 @@ def create_submission_bar_chart_time(data, metric, y_axis_name):
                         position="right",  # 对于水平柱状图，right表示柱子的右端（顶端）
                         color="black"
                     ))
+        .add_yaxis(
+            series_name="完全正确",
+            y_axis=[0]*len(x_data),  # 数据为0（不显示柱子）
+            itemstyle_opts=opts.ItemStyleOpts(color="#4CAF50", opacity=0),  # 完全透明
+            label_opts=opts.LabelOpts(is_show=False)
+        )
+        .add_yaxis(
+            series_name="部分正确",
+            y_axis=[0]*len(x_data),
+            itemstyle_opts=opts.ItemStyleOpts(color="#FFC107", opacity=0),
+            label_opts=opts.LabelOpts(is_show=False)
+        )
+        .add_yaxis(
+            series_name="错误",
+            y_axis=[0]*len(x_data),
+            itemstyle_opts=opts.ItemStyleOpts(color="#F44336", opacity=0),
+            label_opts=opts.LabelOpts(is_show=False)
+        )
         .reversal_axis()
         .set_global_opts(
             xaxis_opts=opts.AxisOpts(name="",
@@ -664,7 +686,7 @@ def create_submission_bar_chart_memo(data, metric, y_axis_name):
     # 准备数据
     x_data = []
     y_data = []
-    
+  
     for i, row in data.iterrows():
         x_data.append(f"提交{i+1}")
         color = get_color_by_category(row['state_category'])
@@ -679,8 +701,7 @@ def create_submission_bar_chart_memo(data, metric, y_axis_name):
         Bar(init_opts=opts.InitOpts(width="100px",height='200px'))
         .add_xaxis(x_data)
         .add_yaxis(
-            y_axis_name,
-             
+            "",
             y_data,
             bar_width='8',
             category_gap="10%",
@@ -689,6 +710,24 @@ def create_submission_bar_chart_memo(data, metric, y_axis_name):
                 position="left",  # 对于水平柱状图，right表示柱子的右端（顶端）
                 color="black"
             )
+        )
+        .add_yaxis(
+            series_name="完全正确",
+            y_axis=[0]*len(x_data),  # 数据为0（不显示柱子）
+            itemstyle_opts=opts.ItemStyleOpts(color="#4CAF50", opacity=0),  # 完全透明
+            label_opts=opts.LabelOpts(is_show=False)
+        )
+        .add_yaxis(
+            series_name="部分正确",
+            y_axis=[0]*len(x_data),
+            itemstyle_opts=opts.ItemStyleOpts(color="#FFC107", opacity=0),
+            label_opts=opts.LabelOpts(is_show=False)
+        )
+        .add_yaxis(
+            series_name="错误",
+            y_axis=[0]*len(x_data),
+            itemstyle_opts=opts.ItemStyleOpts(color="#F44336", opacity=0),
+            label_opts=opts.LabelOpts(is_show=False)
         )
         .reversal_axis()
         .set_global_opts(
@@ -712,7 +751,17 @@ def create_submission_bar_chart_memo(data, metric, y_axis_name):
                                                        )
             ),
             tooltip_opts=opts.TooltipOpts(trigger="axis"),
-            legend_opts=opts.LegendOpts(is_show=False),
+            legend_opts=opts.LegendOpts(
+                is_show=True,
+                orient="vertical",  # 关键修改：垂直排列
+                pos_right="5%",
+                pos_top="5%",    # 垂直居中
+                item_gap=10,        # 图例项间距
+                item_width=30,
+                item_height=15,
+                border_color="#f5f5f5",
+                textstyle_opts=opts.TextStyleOpts(font_size=12)
+            ),
             
         )
     )
@@ -761,9 +810,11 @@ def create_radar_chart(languages, ratios):
         .add(
             series_name="使用比例(%)",
             data=[ratios],
-            areastyle_opts=opts.AreaStyleOpts(opacity=0.3, color="#3498db"),  # 浅蓝色主题
-            linestyle_opts=opts.LineStyleOpts(width=2, color="#2980b9"),
+            areastyle_opts=opts.AreaStyleOpts(opacity=0.3, color="#31f4ed"),  # 浅蓝色主题
+            linestyle_opts=opts.LineStyleOpts(width=2, color="#1185b7"),
             label_opts=opts.LabelOpts(is_show=True, formatter="{c}%", color="#1a1a1a", font_weight="bold"),
+            color="#0a979e"
+        
         )
         .set_series_opts(label_opts=opts.LabelOpts(is_show=False))
         .set_global_opts(
@@ -773,67 +824,6 @@ def create_radar_chart(languages, ratios):
     
     return radar
 
-
-
-# 3. 雷达图生成函数（优化版）
-def create_knowledge_radar(data,student_id):
-    # 自定义雷达图配置
-    max_mastery = 1  # 假设掌握程度是1-5级
-    
-    # 雷达图坐标系配置
-    schema = [
-        {"name": point, "max": max_mastery}
-        for point in data["knowledge_points"]
-    ]
-    
-    # 创建雷达图
-    radar = (
-        Radar(init_opts=opts.InitOpts(
-            width="800px", 
-            height="500px",
-            bg_color="#f5f5f5"  # 浅灰色背景
-        ))
-        .add_schema(
-            schema=schema,
-            splitarea_opt=opts.SplitAreaOpts(
-                is_show=True,
-                areastyle_opts=opts.AreaStyleOpts(opacity=0.1)
-            ),
-            textstyle_opts=opts.TextStyleOpts(color="#1a1a1a", font_size=12, font_weight="bold"),  # 深黑色文字
-            splitline_opt=opts.SplitLineOpts(
-                is_show=True,
-                linestyle_opts=opts.LineStyleOpts(width=1, color="#666666")  # 深灰色分割线
-            ),
-            axisline_opt=opts.AxisLineOpts(
-                is_show=True,
-                linestyle_opts=opts.LineStyleOpts(width=2, color="#1a1a1a")  # 深黑色轴线
-            )
-        )
-        .add(
-            series_name="掌握程度",
-            data=[data["mastery_levels"]],
-            areastyle_opts=opts.AreaStyleOpts(
-                opacity=0.3,
-                color="#3498db"  # 浅蓝色主题
-            ),
-            linestyle_opts=opts.LineStyleOpts(
-                width=2,
-                color="#2980b9"  # 深蓝色线条
-            ),
-            label_opts=opts.LabelOpts(
-                is_show=False,
-                formatter="{c}",
-                font_size=12,
-                color="#1a1a1a"
-            ),
-            symbol="circle",
-        )
-        .set_global_opts(
-            legend_opts=opts.LegendOpts(is_show=False),
-            tooltip_opts=opts.TooltipOpts(trigger="item")
-        )
-    )
-    return radar
 
 
 # 3. 数据筛选函数
@@ -856,7 +846,7 @@ def create_knowledge_radar(data,student_id):
         {"name": point, "max": max_mastery}
         for point in data["knowledge_points"]
     ]
-    
+    data["mastery_levels"] = [round(level, 2) for level in data["mastery_levels"]]
     # 创建雷达图
     radar = (
         Radar(init_opts=opts.InitOpts(
@@ -884,24 +874,28 @@ def create_knowledge_radar(data,student_id):
             series_name="掌握程度",
             data=[data["mastery_levels"]],
             areastyle_opts=opts.AreaStyleOpts(
-                opacity=0.3,
-                color="#3498db"  # 浅蓝色主题
+                opacity=0.4,
+                color="#f1f111"  # 浅蓝色主题
             ),
             linestyle_opts=opts.LineStyleOpts(
                 width=2,
-                color="#2980b9"  # 深蓝色线条
+                color="#86810a",  # 深蓝色线条
+                
             ),
             label_opts=opts.LabelOpts(
                 is_show=False,
                 formatter="{c}",
-                font_size=12,
+                font_size=15,
                 color="#1a1a1a"
             ),
             symbol="circle",
+            color="#505509"
         )
         .set_global_opts(
             legend_opts=opts.LegendOpts(is_show=False),
-            tooltip_opts=opts.TooltipOpts(trigger="item")
+            tooltip_opts=opts.TooltipOpts(trigger="item",
+                                          
+            )
         )
     )
     return radar
@@ -1011,12 +1005,83 @@ def process_student_data2(df):
     
     return student_stats, pca.explained_variance_ratio_
 
+def create_polar_chart2(student_id):
+    """创建极坐标图"""
+    # 筛选该学生的所有数据
+    data = pd.read_csv('./data1/processed_submit_records.csv')
+        
+    # 确保时间列是datetime格式
+    data['time'] = pd.to_datetime(data['time'])
+    data['date'] = data['time'].dt.strftime('%Y-%m-%d')
+    data['hour'] = data['time'].dt.hour
+    data['minute'] = data['time'].dt.minute
+    filtered_data = data[data['student_ID'] == student_id]
+    
+    if filtered_data.empty:
+        return None
+    
+    # 准备极坐标数据：小时作为角度，分钟作为极径
+    polar_data = []
+    for _, row in filtered_data.iterrows():
+        hour = row['hour']
+        minute = row['minute']
+        # 使用字典格式包含更多信息
+        polar_data.append({
+            "value": [minute, hour],
+            "name": f"{hour:02d}:{minute:02d}"
+        })
+    
+    # 创建极坐标图
+    polar = (
+        Polar(init_opts=opts.InitOpts(width="800px", height="600px", bg_color="#f5f5f5"))
+        .add_schema(
+            
+            radiusaxis_opts=opts.RadiusAxisOpts(
+                min_=0, 
+                max_=60,  
+                type_="value",
+                splitline_opts=opts.SplitLineOpts(is_show=True),
+                axislabel_opts=opts.LabelOpts(is_show=False),  # 隐藏半径刻度值
+                axisline_opts=opts.AxisLineOpts(linestyle_opts=opts.LineStyleOpts(color="#000000"))
+            ),
+            angleaxis_opts=opts.AngleAxisOpts(
+                data=[f"{i:02d}时" for i in range(24)],  # 0-23小时标签
+                type_="category",
+                boundary_gap=False,
+                start_angle=90,
+                is_clockwise=True,
+                axislabel_opts=opts.LabelOpts(color="#000000"),
+                axisline_opts=opts.AxisLineOpts(linestyle_opts=opts.LineStyleOpts(color="#000000"))
+            ),
 
+        )
+        .add(
+            "",
+            polar_data,
+            type_="scatter",
+            symbol_size=9,  # 调小散点大小从12改为6
+            itemstyle_opts=opts.ItemStyleOpts(color="#2dd417"),  # 蓝色散点，与#f5f5f5背景适配
+            label_opts=opts.LabelOpts(is_show=False)  # 隐藏散点信息标签
+        )
+        .set_global_opts(
+            title_opts=opts.TitleOpts(
+                title=f"学习时间分布",
+                title_textstyle_opts=opts.TextStyleOpts(color="#000000",font_size=25)
+            ),
+            tooltip_opts=opts.TooltipOpts(
+                trigger="item",
+                formatter="时间: {b}"
+            ),
+        )
+    )
+    
+    return polar
 
 #! 以下是页面设置
 # 页面标题 - 使用更小的标题
 # st.markdown("### 数据可视化大屏")
 # 在容器底部添加填充元素（可选）
+
 
 # 添加浅灰色主题CSS样式
 st.markdown("""
@@ -1027,22 +1092,34 @@ st.markdown("""
     color: #ffffff;
 }
 
-/* 炫酷标题样式 */
+/* 增强炫酷标题样式 - 只修改标题部分 */
 .cool-title {
     text-align: center;
-    padding: 8px 0;
-    margin: 5px 0 15px 0;
+    padding: 20px 0;
+    margin: 5px 0 20px 0;
     width: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #3498db 50%, #667eea 75%, #764ba2 100%);
+    background-size: 300% 300%;
+    border-radius: 15px;
+    box-shadow: 
+        0 8px 32px rgba(102, 126, 234, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
     position: relative;
     overflow: hidden;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(20px);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    animation: gradient-shift 8s ease-in-out infinite;
+}
+
+@keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    25% { background-position: 100% 50%; }
+    50% { background-position: 50% 100%; }
+    75% { background-position: 0% 100%; }
 }
 
 .cool-title::before {
@@ -1052,8 +1129,8 @@ st.markdown("""
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    animation: shine 4s ease-in-out infinite;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: shine 6s ease-in-out infinite;
 }
 
 .cool-title::after {
@@ -1063,8 +1140,153 @@ st.markdown("""
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 0%, transparent 70%);
-    animation: pulse-glow 3s ease-in-out infinite alternate;
+    background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.15) 0%, transparent 70%);
+    animation: pulse-glow 4s ease-in-out infinite alternate;
+}
+
+.title-container {
+    position: relative;
+    z-index: 3;
+}
+
+.title-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120%;
+    height: 120%;
+    background: radial-gradient(ellipse at center, rgba(255,255,255,0.2) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: glow-pulse 3s ease-in-out infinite alternate;
+    z-index: 1;
+}
+
+@keyframes glow-pulse {
+    0% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.8); }
+    100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.2); }
+}
+
+.cool-title h1 {
+    font-size: 3.5rem !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    text-shadow: 
+        0 0 10px rgba(255,255,255,0.8),
+        0 0 20px rgba(255,255,255,0.6),
+        0 0 30px rgba(255,255,255,0.4),
+        0 4px 8px rgba(0,0,0,0.3) !important;
+    margin: 0 !important;
+    font-family: 'Microsoft YaHei', 'SimHei', 'PingFang SC', sans-serif !important;
+    letter-spacing: 8px !important;
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    # background: linear-gradient(45deg, #ffffff, #f0f8ff, #ffffff);
+    # background-size: 200% 200%;
+    # -webkit-background-clip: text;
+    # -webkit-text-fill-color: transparent;
+    # background-clip: text;
+    animation: text-shimmer 4s ease-in-out infinite;
+}
+
+@keyframes text-shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.title-char {
+    display: inline-block;
+    animation: char-bounce 2s ease-in-out infinite;
+    transform-origin: center bottom;
+}
+
+.title-char:nth-child(1) { animation-delay: 0s; }
+.title-char:nth-child(2) { animation-delay: 0.2s; }
+.title-char:nth-child(3) { animation-delay: 0.4s; }
+.title-char:nth-child(4) { animation-delay: 0.6s; }
+
+@keyframes char-bounce {
+    0%, 80%, 100% { 
+        transform: translateY(0) scale(1);
+        text-shadow: 
+            0 0 10px rgba(255,255,255,0.8),
+            0 0 20px rgba(255,255,255,0.6),
+            0 4px 8px rgba(0,0,0,0.3);
+    }
+    40% { 
+        transform: translateY(-10px) scale(1.1);
+        text-shadow: 
+            0 0 15px rgba(255,255,255,1),
+            0 0 25px rgba(255,255,255,0.8),
+            0 6px 12px rgba(0,0,0,0.4);
+    }
+}
+
+.decorative-line {
+    width: 400px;
+    height: 4px;
+    background: linear-gradient(90deg, 
+        rgba(255,255,255,0.2), 
+        rgba(255,255,255,0.8), 
+        rgba(255,255,255,1), 
+        rgba(255,255,255,0.8), 
+        rgba(255,255,255,0.2)
+    );
+    margin: 12px auto;
+    border-radius: 2px;
+    position: relative;
+    z-index: 2;
+    align-self: center;
+    animation: line-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes line-glow {
+    0% { 
+        box-shadow: 0 0 5px rgba(255,255,255,0.5);
+        transform: scaleX(0.8);
+    }
+    100% { 
+        box-shadow: 0 0 15px rgba(255,255,255,0.8);
+        transform: scaleX(1);
+    }
+}
+
+.tech-badges {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+    position: relative;
+    z-index: 2;
+}
+
+.badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    font-weight: 500;
+    letter-spacing: 1px;
+    animation: badge-float 3s ease-in-out infinite;
+}
+
+.badge:nth-child(1) { animation-delay: 0s; }
+.badge:nth-child(2) { animation-delay: 1s; }
+.badge:nth-child(3) { animation-delay: 2s; }
+
+@keyframes badge-float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+}
+
+.badge:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
 }
 
 @keyframes shine {
@@ -1078,51 +1300,7 @@ st.markdown("""
     100% { opacity: 0.7; transform: scale(1.05); }
 }
 
-.cool-title h1 {
-    font-size: 2rem !important;
-    font-weight: 600 !important;
-    color: #ffffff !important;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.3) !important;
-    margin: 0 !important;
-    font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif !important;
-    letter-spacing: 3px !important;
-    position: relative;
-    z-index: 2;
-    text-align: center;
-}
-
-.cool-title .subtitle {
-    font-size: 0.75rem;
-    color: rgba(255,255,255,0.85);
-    margin-top: 2px;
-    font-weight: 300;
-    letter-spacing: 1px;
-    position: relative;
-    z-index: 2;
-    text-align: center;
-}
-
-.cool-title .decorative-line {
-    width: 600px;
-    height: 3px;
-    background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #ff6b6b);
-    margin: 4px auto;
-    border-radius: 1px;
-    animation: rainbow-flow 2s linear infinite;
-    position: relative;
-    z-index: 2;
-    align-self: center;
-}
-
-@keyframes rainbow-flow {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 200% 50%; }
-}
-
-.cool-title .decorative-line {
-    background-size: 200% 100%;
-}
-
+/* 保持原有的其他样式不变 */
 /* 直接修饰Streamlit的列容器 */
 .stColumn {
     position: relative;
@@ -1224,61 +1402,7 @@ st.markdown("""
     50% { background-position: 100% 50%; }
 }
 
-/* 标题样式 */
-h1, h2, h3, h4, h5, h6 {
-    color: #2980b9 !important;
-    text-shadow: 0 0 5px rgba(41, 128, 185, 0.2);
-}
-
-/* 选择框浅灰色样式 */
-.stSelectbox > div > div {
-    background-color: #ffffff;
-    color: #2c3e50;
-    border: 1px solid #2980b9;
-    border-radius: 8px;
-}
-
-/* Tab标签浅灰色样式 - 修改为背景色 */
-.stTabs [data-baseweb="tab-list"] {
-    background-color: #f5f5f5 !important;
-    border-radius: 8px;
-}
-
-.stTabs [data-baseweb="tab"] {
-    background-color: transparent !important;
-    color: #2c3e50 !important;
-    border-radius: 6px;
-    margin: 2px;
-}
-
-/* Tab内容区域背景色 */
-.stTabs [data-baseweb="tab-panel"] {
-    background-color: #f5f5f5 !important;
-    border-radius: 0 0 8px 8px;
-    padding: 10px;
-}
-
-/* 指标卡片浅灰色样式 */
-div[data-testid="metric-container"] {
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-    border: 1px solid #2980b9;
-    border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0 4px 15px rgba(41, 128, 185, 0.1);
-}
-
-div[data-testid="metric-container"] > div {
-    color: #2c3e50 !important;
-}
-
-/* 警告和信息框浅灰色样式 */
-.stAlert {
-    background-color: #ffffff;
-    color: #2c3e50;
-    border-left: 4px solid #2980b9;
-    border-radius: 8px;
-}
-
+/* 保持其他原有样式... */
 /* 复选框样式 */
 .stCheckbox > div {
     color: #2c3e50;
@@ -1294,17 +1418,32 @@ div[data-testid="metric-container"] > div {
     background-color: #ffffff;
 }
 
-# </style>
+</style>
 """, unsafe_allow_html=True)
 
-# 炫酷标题HTML
+# 增强炫酷标题HTML
 st.markdown("""
 <div class="cool-title">
-    <h1>析数启智</h1>
+    <div class="title-container">
+        <h1>
+            <span class="title-char">析</span>
+            <span class="title-char">数</span>
+            <span class="title-char">启</span>
+            <span class="title-char">智</span>
+        </h1>
+        <div class="title-glow"></div>
+    </div>
     <div class="decorative-line"></div>
-    <div class="subtitle">时序多变量教育数据可视分析平台</div>
+    <div class="tech-badges">
+        <span class="badge">AI</span>
+        <span class="badge">大数据</span>
+        <span class="badge">智能分析</span>
+    </div>
 </div>
 """, unsafe_allow_html=True)
+
+
+
 
 
 
@@ -1353,16 +1492,6 @@ with st.container():
                 student_data1 = knowledge_mastery[knowledge_mastery['student_ID'] == student_id]
                 knowledge_points = student_data1['knowledge_point'].tolist()
                 mastery_levels = student_data1['mastery_level'].tolist()
-                # # 添加排序选项
-                # sort_by_mastery = st.checkbox("按掌握程度排序（高分在外层）", value=False)
-
-                # # 如果选择排序，则重新排列数据
-                # if sort_by_mastery:
-                #     # 创建数据对并按掌握程度降序排序
-                #     sorted_data = sorted(zip(odd_knowledge_points, odd_mastery_levels), key=lambda x: x[1], reverse=True)
-                #     odd_knowledge_points, odd_mastery_levels = zip(*sorted_data)
-                #     odd_knowledge_points = list(odd_knowledge_points)
-                #     odd_mastery_levels = list(odd_mastery_levels)
 
                 # 分离奇数和偶数索引的数据
                 odd_indices = [i for i in range(len(knowledge_points)) if i % 2 == 1]  # 奇数索引
@@ -1516,8 +1645,8 @@ with st.container():
             current_title_id = st.session_state.selected_title_id
             
             score_rate_data.columns = score_rate_data.columns.str.strip()
-            radar = create_polar_chart2(score_rate_data, current_title_id)
-            st_pyecharts(radar, height=400)
+            radar = create_radar_chart2(score_rate_data, current_title_id)
+            st_pyecharts(radar, height=350)
             # 加载数据
             raw_data = knowledge_mastery
 
@@ -1555,13 +1684,26 @@ with st.container():
                     clickmode='event+select',  # 启用点击事件
                     plot_bgcolor='#f5f5f5',  # 图表背景为灰色
                     paper_bgcolor='#f5f5f5',  # 整个图形背景为灰色
+                    
                     xaxis=dict(
                         showgrid=False,  # 去掉X轴网格线
-                        zeroline=False   # 去掉零线
+                        zeroline=False,   # 去掉零线
+                        showline=True,
+                        title=dict(
+                            text="PCA维度1 (掌握程度 →)",  # 坐标轴标题
+                            font=dict(color='#000000', size=14, family='Microsoft YaHei')  # 坐标轴标题颜色改为黑色
+                        ),
+                        tickfont=dict(color='#000000', size=12)  # 刻度标签字体颜色改为黑色
                     ),
                     yaxis=dict(
                         showgrid=False,  # 去掉Y轴网格线
-                        zeroline=False   # 去掉零线
+                        zeroline=False,   # 去掉零线
+                        showline=True,
+                        title=dict(
+                            text="PCA维度1 (掌握程度 →)",  # 坐标轴标题
+                            font=dict(color='#000000', size=14, family='Microsoft YaHei')  # 坐标轴标题颜色改为黑色
+                        ),
+                        tickfont=dict(color='#000000', size=12)  # 刻度标签字体颜色改为黑色
                     ),
                     coloraxis_showscale=False  # 去掉颜色条
                 )
@@ -1678,198 +1820,212 @@ with st.container():
 
         st.markdown('</div>', unsafe_allow_html=True)
         
-        tab1, tab2, tab3 = st.tabs(["编程语言", "学习特征", "知识掌握"])
-        with tab1:
-            # 使用session state中的student_id，确保与散点图点击同步
-            current_student_id = st.session_state.get('student_id', student_id)
-            languages, ratios = get_student_data(current_student_id, language_usage)
-
-            radar_chart = create_radar_chart(languages, ratios)
-            st_pyecharts(radar_chart, height="350px",width='500px')
         
-        with tab2:
-            # 学生每日学习情况雷达图 - 从fig7.py集成
-            def get_student_stats(df, student_id, date):
-                # 添加调试信息
-                print(f"查找学生ID: {student_id}, 类型: {type(student_id)}")
-                print(f"查找日期: {date}, 类型: {type(date)}")
-                
-                # 确保student_ID类型匹配
-                df['student_ID'] = df['student_ID'].astype(str)
-                student_id = str(student_id)
-                
-                # 分步筛选以便调试
-                student_records = df[df['student_ID'] == student_id]
-                print(f"找到该学生的记录数: {len(student_records)}")
-                
-                if len(student_records) > 0:
-                    print(f"该学生的可用日期: {student_records['date'].unique()}")
-                    
-                # 如果传入的日期是None或者筛选后为空，使用最新日期
-                if date is None or len(student_records) == 0:
-                    if len(student_records) > 0:
-                        date = student_records['date'].max()
-                        print(f"使用最新日期: {date}")
-                    else:
-                        return None
-                
-                # 最终筛选
-                stats = student_records[student_records['date'] == date]
-                print(f"最终匹配的记录数: {len(stats)}")
-                
-                if not stats.empty:
-                    result = {
-                        "daily_study_time": stats['daily_study_time'].values[0],
-                        "daily_submissions": stats['daily_submissions'].values[0],
-                        "avg_score": stats['avg_score'].values[0]
-                    }
-                    print(f"返回数据: {result}")
-                    return result
-                return None
+        # 使用session state中的student_id，确保与散点图点击同步
+        current_student_id = st.session_state.get('student_id', student_id)
+        languages, ratios = get_student_data(current_student_id, language_usage)
+
+        radar_chart = create_radar_chart(languages, ratios)
+        # st_pyecharts(radar_chart, height="350px",width='500px')
+    
+    
+        # 学生每日学习情况雷达图 - 从fig7.py集成
+        def get_student_stats(df, student_id, date):
+            # 添加调试信息
+            # print(f"查找学生ID: {student_id}, 类型: {type(student_id)}")
+            # print(f"查找日期: {date}, 类型: {type(date)}")
             
-            def create_radar_chart3(data, student_id, selected_date):
-                # 自定义每个指标的最大值
-                max_values = {
-                    "study_time": 600,  # 学习时间最大600分钟（10小时）
-                    "submissions": 30,  # 提交次数最大30次
-                    "score": 100        # 分数最大100分
+            # 确保student_ID类型匹配
+            df['student_ID'] = df['student_ID'].astype(str)
+            student_id = str(student_id)
+            
+            # 分步筛选以便调试
+            student_records = df[df['student_ID'] == student_id]
+            # print(f"找到该学生的记录数: {len(student_records)}")
+            
+            # if len(student_records) > 0:
+            #     print(f"该学生的可用日期: {student_records['date'].unique()}")
+                
+            # 如果传入的日期是None或者筛选后为空，使用最新日期
+            if date is None or len(student_records) == 0:
+                if len(student_records) > 0:
+                    date = student_records['date'].max()
+                    # print(f"使用最新日期: {date}")
+                else:
+                    return None
+            
+            # 最终筛选
+            stats = student_records[student_records['date'] == date]
+            # print(f"最终匹配的记录数: {len(stats)}")
+            
+            if not stats.empty:
+                result = {
+                    "daily_study_time": stats['daily_study_time'].values[0],
+                    "daily_submissions": stats['daily_submissions'].values[0],
+                    "avg_score": stats['avg_score'].values[0]
                 }
-                
-                # 雷达图坐标系配置
-                schema = [
-                    {"name": "每日学习时间(分钟)", "max": 500},
-                    {"name": "每日提交次数", "max": 60},
-                    {"name": "平均得分", "max": 1}
+                # print(f"返回数据: {result}")
+                return result
+            return None
+        
+        def create_radar_chart3(data, student_id, selected_date):
+            # 自定义每个指标的最大值
+            max_values = {
+                "study_time": 600,  # 学习时间最大600分钟（10小时）
+                "submissions": 30,  # 提交次数最大30次
+                "score": 100        # 分数最大100分
+            }
+            
+            # 雷达图坐标系配置
+            schema = [
+                {"name": "每日学习时间(分钟)", "max": 500},
+                {"name": "每日提交次数", "max": 60},
+                {"name": "平均得分", "max": 1}
+            ]
+            
+            # 实际数据点 - 确保数据类型正确
+            study_time = float(data['daily_study_time']) if data['daily_study_time'] is not None else 0
+            submissions = float(data['daily_submissions']) if data['daily_submissions'] is not None else 0
+            avg_score = float(data['avg_score']) if data['avg_score'] is not None else 0
+            
+            radar_data = [
+                [
+                    min(study_time, max_values["study_time"]),
+                    min(submissions, max_values["submissions"]),
+                    min(avg_score, max_values["score"])
                 ]
-                
-                # 实际数据点 - 确保数据类型正确
-                study_time = float(data['daily_study_time']) if data['daily_study_time'] is not None else 0
-                submissions = float(data['daily_submissions']) if data['daily_submissions'] is not None else 0
-                avg_score = float(data['avg_score']) if data['avg_score'] is not None else 0
-                
-                radar_data = [
-                    [
-                        min(study_time, max_values["study_time"]),
-                        min(submissions, max_values["submissions"]),
-                        min(avg_score, max_values["score"])
-                    ]
-                ]
-                
-                print(f"雷达图数据: {radar_data}")  # 调试输出
-                
-                # 创建雷达图
-                radar = (
-                    Radar(init_opts=opts.InitOpts(width="800px", height="500px", bg_color="#f5f5f5"))
-                    .add_schema(
-                        schema=schema,
-                        splitarea_opt=opts.SplitAreaOpts(
-                            is_show=True,
-                            areastyle_opts=opts.AreaStyleOpts(opacity=0.3)
-                        ),
-                        textstyle_opts=opts.TextStyleOpts(color="#1a1a1a", font_size=12, font_weight="bold"),  # 深黑色文字
-                        splitline_opt=opts.SplitLineOpts(
-                            is_show=True, 
-                            linestyle_opts=opts.LineStyleOpts(width=1, color="#666666")  # 深灰色分割线
-                        ),
-                        axisline_opt=opts.AxisLineOpts(
-                            is_show=True,
-                            linestyle_opts=opts.LineStyleOpts(width=2, color="#1a1a1a")  # 深黑色轴线
-                        )
-                    )
-                    .add(
-                        series_name="指标值",
-                        data=radar_data,
-                        areastyle_opts=opts.AreaStyleOpts(
-                            opacity=0.5,
-                            color="#5470C6"
-                        ),
-                        linestyle_opts=opts.LineStyleOpts(
-                            width=3,
-                            color="#5470C6"
-                        ),
-                        label_opts=opts.LabelOpts(
-                            is_show=True,
-                            formatter="{c}",
-                            font_size=14,
-                            color="#1a1a1a",
-                            font_weight="bold"
-                        ),
-                    )
-                    .set_global_opts(
-                        legend_opts=opts.LegendOpts(is_show=False),
+            ]
+            
+            # print(f"雷达图数据: {radar_data}")  # 调试输出
+            
+            # 创建雷达图
+            radar = (
+                Radar(init_opts=opts.InitOpts(width="800px", height="500px", bg_color="#f5f5f5"))
+                .add_schema(
+                    schema=schema,
+                    splitarea_opt=opts.SplitAreaOpts(
+                        is_show=True,
+                        areastyle_opts=opts.AreaStyleOpts(opacity=0.3)
+                    ),
+                    textstyle_opts=opts.TextStyleOpts(color="#1a1a1a", font_size=16, font_weight="bold"),  # 深黑色文字
+                    splitline_opt=opts.SplitLineOpts(
+                        is_show=True, 
+                        linestyle_opts=opts.LineStyleOpts(width=1, color="#666666")  # 深灰色分割线
+                    ),
+                    axisline_opt=opts.AxisLineOpts(
+                        is_show=True,
+                        linestyle_opts=opts.LineStyleOpts(width=2, color="#1a1a1a")  # 深黑色轴线
                     )
                 )
-                return radar
-            
-            # 获取当前选择的日期和学生ID
-            current_student_id = st.session_state.get('student_id', student_id)
-            # 如果没有选择日期（从日历图点击），使用最近的可用日期
-            if 'selected_date' not in locals() or selected_date is None:
-                # 先获取该学生的数据，再取最新日期
-                student_records = student_daily_stats[student_daily_stats['student_ID'].astype(str) == str(current_student_id)]
-                if not student_records.empty:
-                    selected_date = student_records['date'].max()
-                else:
-                    selected_date = None
-            
-            # 添加调试开关，默认关闭
-            show_debug = False
-            if show_debug:
-                st.write(f"学号: {current_student_id}, 类型: {type(current_student_id)}")
-                st.write(f"日期: {selected_date}, 类型: {type(selected_date)}")
-
-                # 检查数据中是否存在该学生该日期的记录
-                matching_records = student_daily_stats[
-                    (student_daily_stats['student_ID'] == current_student_id)
-                ]
-                st.write(f"该学生共有 {len(matching_records)} 条记录")
-                if not matching_records.empty:
-                    st.write("可用日期:")
-                    st.write(matching_records['date'].unique())
-            
-            # 确保日期类型匹配 - 不显示调试信息
-            if selected_date is not None and not isinstance(selected_date, type(student_daily_stats['date'].iloc[0])):
-                try:
-                    # 如果是字符串，尝试转换
-                    if isinstance(selected_date, str):
-                        import datetime
-                        selected_date = datetime.datetime.strptime(selected_date, "%Y-%m-%d").date()
-                    # 如果是pandas Timestamp，转换为date
-                    elif hasattr(selected_date, 'date'):
-                        selected_date = selected_date.date()
-                except Exception as e:
-                    if show_debug:
-                        st.error(f"日期转换错误: {e}")
-            
-            # 获取学生统计数据
-            stats = get_student_stats(student_daily_stats, current_student_id, selected_date)
-            
-            # 显示结果
-            if stats:
-                # 显示雷达图
-                radar_chart = create_radar_chart3(stats, current_student_id, selected_date)
-                st_pyecharts(radar_chart, height='350px', width='500px')
-                
-                # # 显示详细数据
-                # st.markdown(f"""
-                # <div style="font-size: 14px; color: #2c3e50; margin-top: 10px;">
-                # - 学习时间: {stats['daily_study_time']} 分钟
-                # - 提交次数: {stats['daily_submissions']} 次
-                # - 平均得分: {stats['avg_score']:.1f} 分
-                # </div>
-                # """, unsafe_allow_html=True)
+                .add(
+                    series_name="指标值",
+                    data=radar_data,
+                    areastyle_opts=opts.AreaStyleOpts(
+                        opacity=0.5,
+                        color="#81076D"
+                    ),
+                    linestyle_opts=opts.LineStyleOpts(
+                        width=3,
+                        color="#A508B4"
+                    ),
+                    label_opts=opts.LabelOpts(
+                        is_show=True,
+                        formatter="{c}",
+                        font_size=14,
+                        color="#1a1a1a",
+                        
+                    ),
+                    color="#6d0476"
+                )
+                .set_global_opts(
+                    legend_opts=opts.LegendOpts(is_show=False),
+                )
+            )
+            return radar
+        
+        # 获取当前选择的日期和学生ID
+        current_student_id = st.session_state.get('student_id', student_id)
+        # 如果没有选择日期（从日历图点击），使用最近的可用日期
+        if 'selected_date' not in locals() or selected_date is None:
+            # 先获取该学生的数据，再取最新日期
+            student_records = student_daily_stats[student_daily_stats['student_ID'].astype(str) == str(current_student_id)]
+            if not student_records.empty:
+                selected_date = student_records['date'].max()
             else:
-                st.warning(f"未找到学号 {current_student_id} 在 {selected_date} 的记录")
-                # 添加进一步的错误诊断
-                matching_records = student_daily_stats[student_daily_stats['student_ID'].astype(str) == str(current_student_id)]
-                if len(matching_records) > 0:
-                    st.info("请检查日期格式是否匹配。尝试选择上面列出的可用日期之一。")
+                selected_date = None
+        
+        # 添加调试开关，默认关闭
+        show_debug = False
+        if show_debug:
+            st.write(f"学号: {current_student_id}, 类型: {type(current_student_id)}")
+            st.write(f"日期: {selected_date}, 类型: {type(selected_date)}")
 
-        with tab3:
-            # 使用 session state 中的 student_id，确保与散点图点击同步
-            current_student_id = st.session_state.get('student_id', student_id)
-            knowledge_data = get_knowledge_data(current_student_id, main_knowledge_mastery)
-            if knowledge_data:
-                radar_chart = create_knowledge_radar(knowledge_data, current_student_id)
-                st_pyecharts(radar_chart, height="351px",width='500px')
+            # 检查数据中是否存在该学生该日期的记录
+            matching_records = student_daily_stats[
+                (student_daily_stats['student_ID'] == current_student_id)
+            ]
+            st.write(f"该学生共有 {len(matching_records)} 条记录")
+            if not matching_records.empty:
+                st.write("可用日期:")
+                st.write(matching_records['date'].unique())
+        
+        # 确保日期类型匹配 - 不显示调试信息
+        if selected_date is not None and not isinstance(selected_date, type(student_daily_stats['date'].iloc[0])):
+            try:
+                # 如果是字符串，尝试转换
+                if isinstance(selected_date, str):
+                    import datetime
+                    selected_date = datetime.datetime.strptime(selected_date, "%Y-%m-%d").date()
+                # 如果是pandas Timestamp，转换为date
+                elif hasattr(selected_date, 'date'):
+                    selected_date = selected_date.date()
+            except Exception as e:
+                if show_debug:
+                    st.error(f"日期转换错误: {e}")
+        
+        # 获取学生统计数据
+        stats = get_student_stats(student_daily_stats, current_student_id, selected_date)
+        
+        # 显示结果
+        if stats:
+            # 显示雷达图
+            radar_chart2 = create_radar_chart3(stats, current_student_id, selected_date)
+            # st_pyecharts(radar_chart2, height='350px', width='500px')
+            
+            # # 显示详细数据
+            # st.markdown(f"""
+            # <div style="font-size: 14px; color: #2c3e50; margin-top: 10px;">
+            # - 学习时间: {stats['daily_study_time']} 分钟
+            # - 提交次数: {stats['daily_submissions']} 次
+            # - 平均得分: {stats['avg_score']:.1f} 分
+            # </div>
+            # """, unsafe_allow_html=True)
+        else:
+            st.warning(f"未找到学号 {current_student_id} 在 {selected_date} 的记录")
+            # 添加进一步的错误诊断
+            matching_records = student_daily_stats[student_daily_stats['student_ID'].astype(str) == str(current_student_id)]
+            if len(matching_records) > 0:
+                st.info("请检查日期格式是否匹配。尝试选择上面列出的可用日期之一。")
+
+    
+        # 使用 session state 中的 student_id，确保与散点图点击同步
+        current_student_id = st.session_state.get('student_id', student_id)
+        knowledge_data = get_knowledge_data(current_student_id, main_knowledge_mastery)
+        if knowledge_data:
+            radar_chart3 = create_knowledge_radar(knowledge_data, current_student_id)
+            # st_pyecharts(radar_chart3, height="351px",width='500px')
+        # 创建下拉选择框
+        chart_option = st.selectbox(
+            "查看图表类型：",
+            options=["编程语言", "学习特征", "知识掌握","学习时间"]
+        )
+        if chart_option == "编程语言":
+            st_pyecharts(radar_chart, height="330px",width='500px')
+        elif chart_option == "学习特征":
+            st_pyecharts(radar_chart2, height='330px', width='500px')
+        elif chart_option == "知识掌握":
+            st_pyecharts(radar_chart3, height="330px",width='500px')
+        elif chart_option == "学习时间":
+            polar_chart = create_polar_chart2(student_id)
+            st_pyecharts(polar_chart, height="330px",width='500px')
 
