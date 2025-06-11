@@ -2016,7 +2016,7 @@ with st.container():
         # 创建下拉选择框
         chart_option = st.selectbox(
             "查看图表类型：",
-            options=["学习特征", "编程语言", "知识掌握","学习时间"]
+            options=["编程语言","学习特征",  "知识掌握","学习时间"]
         )
         if chart_option == "编程语言":
             st_pyecharts(radar_chart, height="330px",width='500px')
