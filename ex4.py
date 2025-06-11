@@ -672,8 +672,7 @@ def create_submission_bar_chart_time(data, metric, y_axis_name):
                                     axisline_opts=opts.AxisLineOpts(linestyle_opts=opts.LineStyleOpts(opacity=0)), 
                                     ),
             tooltip_opts=opts.TooltipOpts(
-                trigger="axis",
-                
+               is_show=False
             ),
             legend_opts=opts.LegendOpts(is_show=False)
         )
@@ -750,7 +749,7 @@ def create_submission_bar_chart_memo(data, metric, y_axis_name):
                                                        font_size=20,
                                                        )
             ),
-            tooltip_opts=opts.TooltipOpts(trigger="axis"),
+            tooltip_opts=opts.TooltipOpts(is_show=False),
             legend_opts=opts.LegendOpts(
                 is_show=True,
                 orient="vertical",  # 关键修改：垂直排列
